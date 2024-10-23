@@ -51,7 +51,7 @@ class SuperResolutionModel:
         self.current_losses = {}
         self.current_visuals = {"SR": [], "HR": []}
 
-        self.loss_of_total_volume = 0
+        self.loss_of_total_volume = {}
 
     def set_input(self, data):
         """
@@ -61,7 +61,7 @@ class SuperResolutionModel:
         self.lr_slices.clear()
         self.hr_slices.clear()
 
-        self.loss_of_total_volume = 0
+        self.loss_of_total_volume = {"loss_sr": 0, "loss_gan": 0}
 
         # Ensure data has the right structure and load LR and HR volumes
         lr_volume = (
@@ -223,6 +223,9 @@ class SuperResolutionModel:
 
         # Output the losses in a dictionary
         loss_results = {"loss_sr": loss_sr, "loss_gan": loss_gan}
+
+        self.get_total_loss_of_volume["loss_sr"] += loss_results["loss_sr"]
+        self.get_total_loss_of_volume["loss_gan"] += loss_results["loss_gan"]
 
         # Store the current losses
         self.current_losses = loss_results

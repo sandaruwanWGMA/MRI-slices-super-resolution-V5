@@ -40,7 +40,9 @@ class Visualizer:
             plt.draw()
             plt.pause(0.001)
 
-    def print_current_losses(self, epoch, counter, losses, time_per_batch, slice_index):
+    def print_current_losses(
+        self, epoch, counter, losses, time_per_batch, slice_index, mri_vol
+    ):
         """Print current losses on the console.
 
         Args:
@@ -50,7 +52,7 @@ class Visualizer:
             time_per_batch (float): Time taken for the current batch.
             slice_index (int): Index of the current slice.
         """
-        message = f"(Epoch: {epoch}, Batch: {counter}, Slice: {slice_index}) "
+        message = f"(Epoch: {epoch}, Batch: {counter}, MRI Volume: {mri_vol}, Slice: {slice_index}) "
         message += ", ".join([f"{k}: {v:.3f}" for k, v in losses.items()])
         message += f", Time/Batch: {time_per_batch:.3f}"
         print(message)
