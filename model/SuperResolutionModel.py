@@ -192,19 +192,19 @@ class SuperResolutionModel:
         ), "hr_images_normalized has values outside [-1, 1]"
 
         # Step 1: Forward pass through SRGAN (SRUNet)
-        sr_output = self.sr_unet(lr_images_normalized)
+        deeplab_output = self.deeplab(lr_images_normalized)["out"]
 
         # self.current_visuals["SR"].append(sr_output)
 
         # Step 3: Prepare input for VGGStylePatchGAN
         # Forward pass through VGGStylePatchGAN
         real_pred = self.vgg_patch_gan(hr_images_normalized)
-        fake_pred = self.vgg_patch_gan(sr_output)
+        fake_pred = self.vgg_patch_gan(deeplab_output)
 
         # Calculate losses
         loss_gan = discriminator_loss(real_preds=real_pred, fake_preds=fake_pred)
         loss_deeplab = perceptual_quality_loss(
-            sr_output,
+            deeplab_output,
             hr_images_normalized,
         )
 
@@ -213,7 +213,7 @@ class SuperResolutionModel:
         loss_deeplab.backward(
             retain_graph=True
         )  # Retain graph for subsequent backpropagation
-        self.optimizer_sr.step()
+        self.optimizer_deeplab.step()
 
         # Backpropagation and optimization for VGGStylePatchGAN
         self.optimizer_gan.zero_grad()
@@ -221,7 +221,7 @@ class SuperResolutionModel:
         self.optimizer_gan.step()
 
         # Output the losses in a dictionary
-        loss_results = {"loss_sr": loss_sr, "loss_gan": loss_gan}
+        loss_results = {"loss_sr": loss_deeplab, "loss_gan": loss_gan}
 
         # Store the current losses
         self.current_losses = loss_results
