@@ -53,89 +53,91 @@ def main():
 
         for i, data in enumerate(train_loader, 0):
             epoch_iter += 1
-            low_res_images, high_res_images = data[0][i], data[1][i]
-            print(low_res_images.shape, high_res_images.shape)
+            for j in range(data[0].size(0)):
+                low_res_image, high_res_image = data[0][j], data[1][j]
 
-            if high_res_images.shape[2:] != low_res_images.shape[2:]:
+                if high_res_image.shape[2:] != low_res_image.shape[2:]:
+                    print(
+                        f"Mismatched shapes in batch {i}: HR shape {high_res_image.shape}, LR shape {low_res_image.shape}"
+                    )
+                    continue
+
+                current_batch_size = len(data[0])
+                total_iters += current_batch_size
+
+                mri_vol = {"LR": low_res_image, "HR": high_res_image}
+
+                model.set_input(mri_vol)  # Prepare input data by slicing the MRI volume
+
+                # Process each slice in the current volume
+                num_slices = len(model.lr_slices)
+                for slice_index in range(num_slices):
+                    lr_slice, hr_slice = model.get_slice_pair(slice_index)
+
+                    angle = 45  # degrees
+                    translation = (10, 5)  # x and y translation in pixels
+
+                    # Forward, backward pass, and optimize with additional parameters
+                    model.optimize_parameters(
+                        lr_images=lr_slice,
+                        hr_images=hr_slice,
+                        lambda_tv=1.0,
+                        angle=angle,
+                        translation=translation,
+                    )
+
+                    # Print loss information at the specified frequency
+                    if total_iters % opt.print_freq == 0:
+                        losses = model.get_current_losses()
+                        t_comp = (time.time() - epoch_start_time) / epoch_iter
+                        visualizer.print_current_losses(
+                            epoch, epoch_iter, losses, t_comp
+                        )
+
+                # Save the latest model at the specified frequency
+                if total_iters % opt.save_latest_freq == 0:
+                    print(
+                        "Saving the latest model (epoch %d, total_iters %d)"
+                        % (epoch, total_iters)
+                    )
+                    # save_checkpoint(
+                    #     model, opt.checkpoint_dir, "latest", epoch, total_iters
+                    # )
+                    model.save_checkpoint(
+                        opt.checkpoint_dir,
+                        ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
+                        epoch,
+                        total_iters,
+                    )
+
+                # Display visuals at the specified frequency of the slices of a certain MRI Volume
+                # if total_iters % opt.display_freq == 0:
+                # model.save_volume(epoch=epoch)
+
+                # Save the model at the end of every epoch
+                if epoch % opt.save_epoch_freq == 0 and i == len(train_loader) - 1:
+                    print(
+                        "Saving the model at the end of epoch %d, iters %d"
+                        % (epoch, total_iters)
+                    )
+                    # save_checkpoint(
+                    #     model, opt.checkpoint_dir, "epoch_%d" % epoch, epoch, total_iters
+                    # )
+                    model.save_checkpoint(
+                        opt.checkpoint_dir,
+                        ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
+                        epoch,
+                        total_iters,
+                    )
+
                 print(
-                    f"Mismatched shapes in batch {i}: HR shape {high_res_images.shape}, LR shape {low_res_images.shape}"
+                    "End of epoch %d / %d \t Time Taken: %d sec"
+                    % (
+                        epoch,
+                        opt.n_epochs + opt.n_epochs_decay,
+                        time.time() - epoch_start_time,
+                    )
                 )
-                continue
-
-            current_batch_size = len(data[0])
-            total_iters += current_batch_size
-
-            mri_vol = {"LR": low_res_images, "HR": high_res_images}
-
-            model.set_input(mri_vol)  # Prepare input data by slicing the MRI volume
-
-            # Process each slice in the current volume
-            num_slices = len(model.lr_slices)
-            for slice_index in range(num_slices):
-                lr_slice, hr_slice = model.get_slice_pair(slice_index)
-
-                angle = 45  # degrees
-                translation = (10, 5)  # x and y translation in pixels
-
-                # Forward, backward pass, and optimize with additional parameters
-                model.optimize_parameters(
-                    lr_images=lr_slice,
-                    hr_images=hr_slice,
-                    lambda_tv=1.0,
-                    angle=angle,
-                    translation=translation,
-                )
-
-                # Print loss information at the specified frequency
-                if total_iters % opt.print_freq == 0:
-                    losses = model.get_current_losses()
-                    t_comp = (time.time() - epoch_start_time) / epoch_iter
-                    visualizer.print_current_losses(epoch, epoch_iter, losses, t_comp)
-
-            # Save the latest model at the specified frequency
-            if total_iters % opt.save_latest_freq == 0:
-                print(
-                    "Saving the latest model (epoch %d, total_iters %d)"
-                    % (epoch, total_iters)
-                )
-                # save_checkpoint(
-                #     model, opt.checkpoint_dir, "latest", epoch, total_iters
-                # )
-                model.save_checkpoint(
-                    opt.checkpoint_dir,
-                    ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
-                    epoch,
-                    total_iters,
-                )
-
-            # Display visuals at the specified frequency of the slices of a certain MRI Volume
-            # if total_iters % opt.display_freq == 0:
-            # model.save_volume(epoch=epoch)
-
-            # Save the model at the end of every epoch
-            if epoch % opt.save_epoch_freq == 0 and i == len(train_loader) - 1:
-                print(
-                    "Saving the model at the end of epoch %d, iters %d"
-                    % (epoch, total_iters)
-                )
-                # save_checkpoint(
-                #     model, opt.checkpoint_dir, "epoch_%d" % epoch, epoch, total_iters
-                # )
-                model.save_checkpoint(
-                    opt.checkpoint_dir,
-                    ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
-                    epoch,
-                    total_iters,
-                )
-
-            print(
-                "End of epoch %d / %d \t Time Taken: %d sec"
-                % (
-                    epoch,
-                    opt.n_epochs + opt.n_epochs_decay,
-                    time.time() - epoch_start_time,
-                )
-            )
 
     model.save_final_models()
 
