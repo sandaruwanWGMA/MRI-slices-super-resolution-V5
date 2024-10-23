@@ -51,6 +51,8 @@ class SuperResolutionModel:
         self.current_losses = {}
         self.current_visuals = {"SR": [], "HR": []}
 
+        self.loss_of_total_volume = 0
+
     def set_input(self, data):
         """
         Prepares the input data by extracting slices from a 3D MRI volume.
@@ -58,6 +60,8 @@ class SuperResolutionModel:
         # Clear previous slice data
         self.lr_slices.clear()
         self.hr_slices.clear()
+
+        self.loss_of_total_volume = 0
 
         # Ensure data has the right structure and load LR and HR volumes
         lr_volume = (
@@ -224,6 +228,9 @@ class SuperResolutionModel:
         self.current_losses = loss_results
 
         return loss_results
+
+    def get_total_loss_of_volume(self):
+        return self.loss_of_total_volume
 
     def get_current_losses(self):
         """

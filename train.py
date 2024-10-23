@@ -91,7 +91,7 @@ def main():
                         losses = model.get_current_losses()
                         t_comp = (time.time() - epoch_start_time) / epoch_iter
                         visualizer.print_current_losses(
-                            epoch, epoch_iter, losses, t_comp
+                            epoch, epoch_iter, losses, t_comp, slice_index
                         )
 
                 # Save the latest model at the specified frequency
@@ -115,10 +115,11 @@ def main():
                 # model.save_volume(epoch=epoch)
 
                 print(
-                    "End of epoch %d / %d \t Time Taken: %d sec"
+                    "End of epoch %d / %d \t Total loss for the previous MRI volume: %.3f \t Time Taken: %d sec"
                     % (
                         epoch,
                         opt.n_epochs + opt.n_epochs_decay,
+                        model.get_total_loss_of_volume() / num_slices,
                         time.time() - epoch_start_time,
                     )
                 )
