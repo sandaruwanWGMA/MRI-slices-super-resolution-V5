@@ -6,7 +6,6 @@ import nibabel as nib
 from .SRUNet import SRUNet
 from .degradation_network import DegradationNetwork
 from .VGGStylePatchGAN import VGGStylePatchGAN
-from .CustomDeepLab import CustomDeepLab
 
 from utils.losses import (
     perceptual_quality_loss,
@@ -23,11 +22,12 @@ class SuperResolutionModel:
         )
 
         # Initialize the models based on the configuration
-        self.deeplab = CustomDeepLab(
+
+        self.sr_unet = SRUNet(
+            image_size=opt.image_size,
             in_channels=opt.in_channels,
-            num_classes=opt.num_classes,
-            freeze_backbone=opt.freeze_backbone,
-            freeze_classifier=opt.freeze_classifier,
+            out_channels=opt.out_channels,
+            freeze_encoder=opt.freeze_encoder,
         ).to(
             self.device
         )  # Move SRUNet model to the correct device
@@ -38,7 +38,7 @@ class SuperResolutionModel:
         self.vgg_patch_gan = VGGStylePatchGAN(patch_size=opt.patch_size).to(self.device)
 
         # Optimizers for SRUNet and VGGStylePatchGAN only, since DegradationNetwork is not trained
-        self.optimizer_deeplab = torch.optim.Adam(self.deeplab.parameters(), lr=opt.lr)
+        self.optimizer_sr = torch.optim.Adam(self.sr_unet.parameters(), lr=opt.lr)
         self.optimizer_gan = torch.optim.Adam(
             self.vgg_patch_gan.parameters(), lr=opt.lr
         )
@@ -192,30 +192,32 @@ class SuperResolutionModel:
         ), "hr_images_normalized has values outside [-1, 1]"
 
         # Zero gradients for both optimizers
-        self.optimizer_deeplab.zero_grad()
+        self.optimizer_sr.zero_grad()
         self.optimizer_gan.zero_grad()
 
-        # Forward passes
-        deeplab_output = self.deeplab(lr_images_normalized)["out"]
-        real_pred = self.vgg_patch_gan(hr_images_normalized)
-        fake_pred = self.vgg_patch_gan(deeplab_output)
+        # Forward pass through SRUNet
+        sr_output = self.sr_unet(lr_images_normalized)
 
-        # Compute losses
-        loss_deeplab = perceptual_quality_loss(deeplab_output, hr_images_normalized)
+        # Forward pass through VGGStylePatchGAN
+        real_pred = self.vgg_patch_gan(hr_images_normalized)
+        fake_pred = self.vgg_patch_gan(sr_output)
+
+        # Calculate losses
+        loss_sr = perceptual_quality_loss(sr_output, hr_images_normalized)
         loss_gan = discriminator_loss(real_preds=real_pred, fake_preds=fake_pred)
 
-        # Total loss (you may choose how to weight these losses)
-        total_loss = loss_deeplab + loss_gan
+        # Total loss (you can weight the losses if needed)
+        total_loss = loss_sr + loss_gan
 
         # Backward pass
         total_loss.backward()
 
         # Update parameters
-        self.optimizer_deeplab.step()
+        self.optimizer_sr.step()
         self.optimizer_gan.step()
 
         # Output the losses in a dictionary
-        loss_results = {"loss_sr": loss_deeplab, "loss_gan": loss_gan}
+        loss_results = {"loss_sr": loss_sr, "loss_gan": loss_gan}
 
         # Store the current losses
         self.current_losses = loss_results
