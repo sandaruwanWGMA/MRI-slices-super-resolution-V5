@@ -66,6 +66,18 @@ class TrainOptions:
             help="Directory to save model checkpoints",
         )
         self.parser.add_argument(
+            "--checkpoint_dir_vol",
+            type=str,
+            default="./checkpoints/models_per_each_mri_volume",
+            help="Directory to save model checkpoints",
+        )
+        self.parser.add_argument(
+            "--checkpoint_dir_epoch",
+            type=str,
+            default="./checkpoints/models_per_epoch",
+            help="Directory to save model checkpoints",
+        )
+        self.parser.add_argument(
             "--which_epoch",
             type=str,
             default="latest",

@@ -104,7 +104,7 @@ def main():
                     #     model, opt.checkpoint_dir, "latest", epoch, total_iters
                     # )
                     model.save_checkpoint(
-                        opt.checkpoint_dir,
+                        opt.checkpoint_dir_vol,
                         ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
                         epoch,
                         total_iters,
@@ -114,22 +114,6 @@ def main():
                 # if total_iters % opt.display_freq == 0:
                 # model.save_volume(epoch=epoch)
 
-                # Save the model at the end of every epoch
-                if epoch % opt.save_epoch_freq == 0 and i == len(train_loader) - 1:
-                    print(
-                        "Saving the model at the end of epoch %d, iters %d"
-                        % (epoch, total_iters)
-                    )
-                    # save_checkpoint(
-                    #     model, opt.checkpoint_dir, "epoch_%d" % epoch, epoch, total_iters
-                    # )
-                    model.save_checkpoint(
-                        opt.checkpoint_dir,
-                        ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
-                        epoch,
-                        total_iters,
-                    )
-
                 print(
                     "End of epoch %d / %d \t Time Taken: %d sec"
                     % (
@@ -138,6 +122,18 @@ def main():
                         time.time() - epoch_start_time,
                     )
                 )
+
+        # Save the model at the end of every epoch
+        print("Saving the model at the end of epoch %d" % (epoch))
+        # save_checkpoint(
+        #     model, opt.checkpoint_dir, "epoch_%d" % epoch, epoch, total_iters
+        # )
+        model.save_checkpoint(
+            opt.checkpoint_dir_epoch,
+            ["sr epoch_%d" % epoch, "vgg_patchgan epoch_%d" % epoch],
+            epoch,
+            total_iters,
+        )
 
     model.save_final_models()
 
