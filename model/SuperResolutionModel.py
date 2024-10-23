@@ -28,6 +28,7 @@ class SuperResolutionModel:
             in_channels=opt.in_channels,
             out_channels=opt.out_channels,
             freeze_encoder=opt.freeze_encoder,
+            unfreeze_layers=opt.unfreeze_layers,
         ).to(
             self.device
         )  # Move SRUNet model to the correct device
@@ -206,7 +207,7 @@ class SuperResolutionModel:
         loss_sr = perceptual_quality_loss(sr_output, hr_images_normalized)
         loss_gan = discriminator_loss(real_preds=real_pred, fake_preds=fake_pred)
 
-        # Total loss (you can weight the losses if needed)
+        # Total loss
         total_loss = loss_sr + loss_gan
 
         # Backward pass

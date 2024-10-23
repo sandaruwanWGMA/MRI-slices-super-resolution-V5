@@ -149,6 +149,12 @@ class TrainOptions:
             default=70,
             help="Patch size for VGGStylePatchGAN model",
         )
+        self.parser.add_argument(
+            "--unfreeze_layers",
+            type=int,
+            default=["blocks.3", "blocks.4", "blocks.5", "blocks.6"],
+            help="Unfreezed layers for SRUNet",
+        )
         # Parameters for loss functions
         self.parser.add_argument(
             "--alpha",
