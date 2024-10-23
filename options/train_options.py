@@ -189,12 +189,12 @@ class TrainOptions:
         )
         self.parser.add_argument(
             "--freeze_backbone",
-            action="True",
+            default=True,
             help="Freeze the backbone of the CustomDeepLab model",
         )
         self.parser.add_argument(
             "--freeze_classifier",
-            action="False",
+            default=False,
             help="Freeze the classifier of the CustomDeepLab model",
         )
 
