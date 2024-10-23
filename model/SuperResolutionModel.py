@@ -203,6 +203,10 @@ class SuperResolutionModel:
 
         # Calculate losses
         loss_gan = discriminator_loss(real_preds=real_pred, fake_preds=fake_pred)
+        loss_sr = perceptual_quality_loss(
+            sr_output,
+            hr_images_normalized,
+        )
 
         # Backpropagation and optimization for SRUNet
         self.optimizer_sr.zero_grad()
@@ -215,11 +219,6 @@ class SuperResolutionModel:
         self.optimizer_gan.zero_grad()
         loss_gan.backward()
         self.optimizer_gan.step()
-
-        loss_sr = perceptual_quality_loss(
-            sr_output,
-            hr_images_normalized,
-        )
 
         # Output the losses in a dictionary
         loss_results = {"loss_sr": loss_sr, "loss_gan": loss_gan}
