@@ -86,6 +86,8 @@ def main():
                         translation=translation,
                     )
 
+                    print("C1")
+
                     # Print loss information at the specified frequency
                     if total_iters % opt.print_freq == 0:
                         losses = model.get_current_losses()
