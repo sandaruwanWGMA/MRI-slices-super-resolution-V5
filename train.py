@@ -47,9 +47,11 @@ def main():
 
     # Training loop
     total_iters = 0
+    print("A1")
     for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):
         epoch_start_time = time.time()
         epoch_iter = 0
+        print("A2")
 
         for i, data in enumerate(train_loader, 0):
             epoch_iter += 1
