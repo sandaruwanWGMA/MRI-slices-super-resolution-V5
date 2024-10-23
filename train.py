@@ -53,8 +53,7 @@ def main():
 
         for i, data in enumerate(train_loader, 0):
             epoch_iter += 1
-            # low_res_images, high_res_images = data[0][i], data[1][i]
-            low_res_images, high_res_images = data[0], data[1]
+            low_res_images, high_res_images = data[0][i], data[1][i]
 
             if high_res_images.shape[2:] != low_res_images.shape[2:]:
                 print(
