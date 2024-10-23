@@ -114,8 +114,10 @@ def main():
                 # if total_iters % opt.display_freq == 0:
                 # model.save_volume(epoch=epoch)
 
-                total_loss_sr = model.get_total_loss_of_volume["loss_sr"] / num_slices
-                total_loss_gan = model.get_total_loss_of_volume["loss_gan"] / num_slices
+                total_loss_sr = model.get_total_loss_of_volume()["loss_sr"] / num_slices
+                total_loss_gan = (
+                    model.get_total_loss_of_volume()["loss_gan"] / num_slices
+                )
 
                 print(
                     "Epoch %d / %d \t Total SR Loss For Previous MRI Volume: %.3f \t Total GAN Loss For Previous MRI Volume: %.3f \t Time Taken: %d sec"
