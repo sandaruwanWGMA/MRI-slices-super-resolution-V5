@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import segmentation_models_pytorch as smp
-
-# from .networks import GeneratorFrequencyFilter
+from .networks import GeneratorFrequencyFilter
 
 
 class SRUNet(nn.Module):
@@ -10,11 +9,11 @@ class SRUNet(nn.Module):
         super(SRUNet, self).__init__()
 
         # Initialize frequency filter
-        # self.frequency_filter = GeneratorFrequencyFilter(image_size)
+        self.frequency_filter = GeneratorFrequencyFilter(image_size)
 
         # Initialize UNet with EfficientNet-b3 encoder
         self.unet = smp.Unet(
-            encoder_name="efficientnet-b3",  # Suitable for MRI super-resolution
+            encoder_name="resnet101",  # Suitable for MRI super-resolution
             encoder_weights="imagenet",  # Pre-trained weights
             in_channels=in_channels,  # Typically 1 for grayscale MRI images
             classes=out_channels,  # Number of output channels
@@ -28,8 +27,8 @@ class SRUNet(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, x):
-        # x_filtered = self.frequency_filter(x)
-        x_unet = self.unet(x)
+        x_filtered = self.frequency_filter(x)
+        x_unet = self.unet(x_filtered)
         return self.tanh(x_unet)
 
 
@@ -46,4 +45,4 @@ class SRUNet(nn.Module):
 
 # # Forward pass
 # output = model(x)
-# print(output.shape)
+# print(output)
