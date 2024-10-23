@@ -91,7 +91,7 @@ def main():
                         losses = model.get_current_losses()
                         t_comp = (time.time() - epoch_start_time) / epoch_iter
                         visualizer.print_current_losses(
-                            epoch, epoch_iter, losses, t_comp, slice_index, j
+                            epoch, epoch_iter, losses, t_comp, slice_index + 1, j + 1
                         )
 
                 # Save the latest model at the specified frequency
