@@ -86,19 +86,18 @@ class SuperResolutionModel:
 
             # Convert slices to tensors and move to the appropriate device
             lr_tensor = (
-                torch.tensor(lr_slice, dtype=torch.float32)
-                .clone()
+                lr_slice.clone()
                 .detach()
                 .to(self.device)
-                .unsqueeze(0)
-            )  # Shape: (1, 1, 256, 256)
+                .unsqueeze(0)  # (1, 1, 256, 256)
+            )
+
             hr_tensor = (
-                torch.tensor(hr_slice, dtype=torch.float32)
-                .clone()
+                hr_slice.clone()
                 .detach()
                 .to(self.device)
-                .unsqueeze(0)
-            )  # Shape: (1, 1, 256, 256)
+                .unsqueeze(0)  # (1, 1, 256, 256)
+            )
 
             # Append to the slice list
             self.lr_slices.append(lr_tensor)
@@ -225,8 +224,8 @@ class SuperResolutionModel:
         # Output the losses in a dictionary
         loss_results = {"loss_sr": loss_sr, "loss_gan": loss_gan}
 
-        self.get_total_loss_of_volume["loss_sr"] += loss_results["loss_sr"]
-        self.get_total_loss_of_volume["loss_gan"] += loss_results["loss_gan"]
+        self.loss_of_total_volume["loss_sr"] += loss_results["loss_sr"]
+        self.loss_of_total_volume["loss_gan"] += loss_results["loss_gan"]
 
         # Store the current losses
         self.current_losses = loss_results
