@@ -26,7 +26,7 @@ def perceptual_quality_loss(output, target, alpha=1.0, beta=1.0, gamma=1.0):
 
     # PSNR Loss (lower PSNR corresponds to higher loss)
     psnr_value = piq.psnr(output, target, data_range=1.0)
-    psnr_loss = -torch.log(psnr_value + 1e-7)  # Log transform for stability
+    psnr_loss = 1 / (psnr_value + 1e-7)
 
     # Weighted sum of losses
     combined_loss = (alpha * l1_loss) + (beta * ssim_loss) + (gamma * psnr_loss)
@@ -68,7 +68,7 @@ def perceptual_quality_loss(output, target, alpha=0.5, beta=1.0, gamma=0.25):
     # PSNR Loss (lower PSNR corresponds to higher loss)
     psnr_value = piq.psnr(output, target, data_range=1.0)
 
-    psnr_loss = -torch.log(psnr_value + 1e-7)  # Log transform for stability
+    psnr_loss = 1 / (psnr_value + 1e-7)
 
     # Weighted sum of losses
     combined_loss = (alpha * l1_loss) + (beta * ssim_loss) + (gamma * psnr_loss)
