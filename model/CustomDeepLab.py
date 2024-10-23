@@ -11,7 +11,7 @@ class CustomDeepLab(nn.Module):
         self,
         in_channels=1,
         num_classes=1,
-        freeze_backbone=True,
+        freeze_backbone=False,
         freeze_classifier=False,
     ):
         super(CustomDeepLab, self).__init__()
@@ -31,6 +31,9 @@ class CustomDeepLab(nn.Module):
 
         # Replace all BatchNorm2d layers with GroupNorm
         self._replace_batchnorm(self.deeplab)
+
+        # Replace in-place ReLU with out-of-place ReLU
+        self._replace_relu(self.deeplab)
 
         # Modify the classifier to output num_classes channels
         self.deeplab.classifier[-1] = nn.Conv2d(
@@ -73,6 +76,19 @@ class CustomDeepLab(nn.Module):
             else:
                 # Recursively apply to child modules
                 self._replace_batchnorm(child)
+
+    def _replace_relu(self, module):
+        """
+        Recursively replace all in-place ReLU activations with out-of-place ReLU.
+        """
+        for name, child in module.named_children():
+            if isinstance(child, nn.ReLU):
+                if child.inplace:
+                    # Replace in-place ReLU with out-of-place ReLU
+                    setattr(module, name, nn.ReLU(inplace=False))
+            else:
+                # Recursively apply to child modules
+                self._replace_relu(child)
 
     def forward(self, x):
         return self.deeplab(x)
