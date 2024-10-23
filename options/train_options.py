@@ -180,6 +180,23 @@ class TrainOptions:
             default=1.0,
             help="Weight for total variation loss in GDNLoss",
         )
+        # Options specific to CustomDeepLab model
+        self.parser.add_argument(
+            "--num_classes",
+            type=int,
+            default=1,
+            help="Number of output classes for segmentation",
+        )
+        self.parser.add_argument(
+            "--freeze_backbone",
+            action="True",
+            help="Freeze the backbone of the CustomDeepLab model",
+        )
+        self.parser.add_argument(
+            "--freeze_classifier",
+            action="False",
+            help="Freeze the classifier of the CustomDeepLab model",
+        )
 
         self.initialized = True
 

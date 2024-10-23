@@ -6,6 +6,7 @@ import nibabel as nib
 from .SRUNet import SRUNet
 from .degradation_network import DegradationNetwork
 from .VGGStylePatchGAN import VGGStylePatchGAN
+from .CustomDeepLab import CustomDeepLab
 
 from utils.losses import (
     perceptual_quality_loss,
@@ -22,12 +23,11 @@ class SuperResolutionModel:
         )
 
         # Initialize the models based on the configuration
-
-        self.sr_unet = SRUNet(
-            image_size=opt.image_size,
+        self.deeplab = CustomDeepLab(
             in_channels=opt.in_channels,
-            out_channels=opt.out_channels,
-            freeze_encoder=opt.freeze_encoder,
+            num_classes=opt.num_classes,
+            freeze_backbone=opt.freeze_backbone,
+            freeze_classifier=opt.freeze_classifier,
         ).to(
             self.device
         )  # Move SRUNet model to the correct device
@@ -38,7 +38,7 @@ class SuperResolutionModel:
         self.vgg_patch_gan = VGGStylePatchGAN(patch_size=opt.patch_size).to(self.device)
 
         # Optimizers for SRUNet and VGGStylePatchGAN only, since DegradationNetwork is not trained
-        self.optimizer_sr = torch.optim.Adam(self.sr_unet.parameters(), lr=opt.lr)
+        self.optimizer_deeplab = torch.optim.Adam(self.deeplab.parameters(), lr=opt.lr)
         self.optimizer_gan = torch.optim.Adam(
             self.vgg_patch_gan.parameters(), lr=opt.lr
         )
@@ -203,14 +203,14 @@ class SuperResolutionModel:
 
         # Calculate losses
         loss_gan = discriminator_loss(real_preds=real_pred, fake_preds=fake_pred)
-        loss_sr = perceptual_quality_loss(
+        loss_deeplab = perceptual_quality_loss(
             sr_output,
             hr_images_normalized,
         )
 
         # Backpropagation and optimization for SRUNet
-        self.optimizer_sr.zero_grad()
-        loss_sr.backward(
+        self.optimizer_deeplab.zero_grad()
+        loss_deeplab.backward(
             retain_graph=True
         )  # Retain graph for subsequent backpropagation
         self.optimizer_sr.step()
