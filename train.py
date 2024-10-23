@@ -76,6 +76,7 @@ def main():
 
                     angle = 45  # degrees
                     translation = (10, 5)  # x and y translation in pixels
+                    print("C1")
 
                     # Forward, backward pass, and optimize with additional parameters
                     model.optimize_parameters(
@@ -86,7 +87,7 @@ def main():
                         translation=translation,
                     )
 
-                    print("C1")
+                    print("C2")
 
                     # Print loss information at the specified frequency
                     if total_iters % opt.print_freq == 0:
